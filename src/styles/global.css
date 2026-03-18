@@ -136,6 +136,25 @@ hr {
 	}
 }
 
+/* View Transition animations */
+@keyframes cardEntrance {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.post-card.card-animate {
+		animation: none;
+		opacity: 1;
+	}
+}
+
 .sr-only {
 	border: 0;
 	padding: 0;
