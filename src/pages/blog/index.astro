@@ -32,7 +32,13 @@ const posts = (await getCollection('blog')).sort(
 			}
 			ul li * {
 				text-decoration: none;
-				transition: 0.2s ease;
+			}
+			ul li a h4,
+			ul li a .date {
+				transition: color 0.2s ease;
+			}
+			ul li img {
+				transition: box-shadow 0.2s ease;
 			}
 			ul li:first-child {
 				width: 100%;
@@ -68,13 +74,10 @@ const posts = (await getCollection('blog')).sort(
 			ul a:hover img {
 				box-shadow: var(--box-shadow);
 			}
-			.post-card {
-			opacity: 0;
-		}
-		.post-card.card-animate {
-			animation: cardEntrance 0.4s ease forwards;
-		}
-		@media (max-width: 720px) {
+			.post-card.card-animate {
+				animation: cardEntrance 0.4s ease forwards;
+			}
+			@media (max-width: 720px) {
 				ul {
 					gap: 0.5em;
 				}
@@ -121,13 +124,33 @@ const posts = (await getCollection('blog')).sort(
 		<Footer />
 	</body>
 	<script>
-		function animateCards() {
+		let isBackNav = false;
+
+		document.addEventListener('astro:before-preparation', (e) => {
+			isBackNav = (e as any).navigationType === 'traverse';
+		});
+
+		// Runs after DOM swap, inside the view transition — browser hasn't captured
+		// the new state yet, so setting opacity here keeps cards invisible in the
+		// transition's new-state snapshot (forward nav only).
+		document.addEventListener('astro:after-swap', () => {
+			if (isBackNav) return;
 			const cards = document.querySelectorAll<HTMLElement>('.post-card');
 			cards.forEach((card, i) => {
+				card.style.opacity = '0';
 				card.style.animationDelay = `${i * 80}ms`;
-				card.classList.add('card-animate');
 			});
-		}
-		document.addEventListener('astro:page-load', animateCards);
+		});
+
+		// Runs after the view transition animation completes.
+		document.addEventListener('astro:page-load', () => {
+			const cards = document.querySelectorAll<HTMLElement>('.post-card');
+			if (isBackNav || !cards.length) {
+				isBackNav = false;
+				return;
+			}
+			isBackNav = false;
+			cards.forEach((card) => card.classList.add('card-animate'));
+		});
 	</script>
 </html>
